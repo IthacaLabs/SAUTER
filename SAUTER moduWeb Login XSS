@@ -1,6 +1,8 @@
 Reflected XSS (Cross-Site Scripting) attack
 -------------------------------------------
 
+Version: SAUTER moduWeb Firmware Version: v2.7.1
+
 Type: Unauthenticated Remote attack
 
 We have identified that the “Sauter moduWeb - Login” web page of “SAUTER moduWeb” product is vulnerable to Reflective Cross-site scripting (XSS). This is due to that the Web App fails to adequately sanitize request strings of malicious JavaScript. By leveraging this issue, an attacker is able to cause arbitrary HTML and JavaScript code to be executed in a user's browser within the security context of the affected site. This attack can be used in conjunction with a social engineering techniques.
