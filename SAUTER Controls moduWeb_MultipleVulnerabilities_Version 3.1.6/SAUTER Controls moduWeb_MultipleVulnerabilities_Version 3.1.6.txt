@@ -1,0 +1,7 @@
+SAUTER EY-modulo 5 Building Automation Stations
+-----------------------------------------------
+
+ICSA-23-082-03 (CVE-2023-28650, CVE-2023-28655, CVE-2023-22300, CVE-2023-27927, CVE-2023-28652).
+
+Reference:
+https://www.cisa.gov/news-events/ics-advisories/icsa-23-082-03
